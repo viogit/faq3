@@ -23,6 +23,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef __Q_SHARED_H
 #define __Q_SHARED_H
 
+// xDiloc - enter
+#define	FAQ3_BATTER
+#define	FAQ3_FSLOAD
+#define	FAQ3_CSCALE
+#define	FAQ3_PORTAL
+#define	FAQ3_CMONGL
+
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
@@ -41,7 +48,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   #define CINEMATICS_INTRO		"intro.roq"
 //  #define LEGACY_PROTOCOL	// You probably don't need this for your standalone game
 #else
+
+#ifdef	FAQ3_BATTER
+// xDiloc - version
+#define PRODUCT_NAME				"faq3"
+#else
   #define PRODUCT_NAME				"ioq3"
+#endif
+
   #define BASEGAME					"baseq3"
   #define CLIENT_WINDOW_TITLE		"ioquake3"
   #define CLIENT_WINDOW_MIN_TITLE	"ioq3"
@@ -746,6 +760,10 @@ int		COM_GetCurrentParseLine( void );
 char	*COM_Parse( char **data_p );
 char	*COM_ParseExt( char **data_p, qboolean allowLineBreak );
 int		COM_Compress( char *data_p );
+#ifdef	FAQ3_FSLOAD
+// drakkar - optimized sub-parse function
+int	COM_CompressBracedSection(char **data_p, char **name, char **text, int *nameLength, int *textLength);
+#endif
 void	COM_ParseError( char *format, ... ) __attribute__ ((format (printf, 1, 2)));
 void	COM_ParseWarning( char *format, ... ) __attribute__ ((format (printf, 1, 2)));
 //int		COM_ParseInfos( char *buf, int max, char infos[][MAX_INFO_STRING] );

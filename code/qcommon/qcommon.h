@@ -251,7 +251,12 @@ PROTOCOL
 ==============================================================
 */
 
+#ifdef	FAQ3_BATTER
+// xDiloc - like old protocol
+#define	PROTOCOL_VERSION	68
+#else
 #define	PROTOCOL_VERSION	71
+#endif
 #define PROTOCOL_LEGACY_VERSION	68
 // 1.31 - 67
 
@@ -1163,6 +1168,13 @@ dialogResult_t Sys_Dialog( dialogType_t type, const char *message, const char *t
 
 void Sys_RemovePIDFile( const char *gamedir );
 void Sys_InitPIDFile( const char *gamedir );
+
+#ifdef	FAQ3_CSCALE
+// xDiloc - text scale
+unsigned int CON_LogRead(char *out, unsigned int outSize);
+void CON_LogSaveReadPos(void);
+void CON_LogRestoreReadPos(void);
+#endif
 
 /* This is based on the Adaptive Huffman algorithm described in Sayood's Data
  * Compression book.  The ranks are not actually stored, but implicitly defined

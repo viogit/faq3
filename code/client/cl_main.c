@@ -122,6 +122,11 @@ cvar_t	*cl_consoleKeys;
 
 cvar_t	*cl_rate;
 
+#ifdef	FAQ3_CSCALE
+// xDiloc - text scale
+cvar_t	*con_textscale;
+#endif
+
 clientActive_t		cl;
 clientConnection_t	clc;
 clientStatic_t		cls;
@@ -3207,7 +3212,11 @@ void CL_InitRef( void ) {
 	Com_Printf( "----- Initializing Renderer ----\n" );
 
 #ifdef USE_RENDERER_DLOPEN
+#ifdef	FAQ3_BATTER
+	cl_renderer = Cvar_Get("cl_renderer", "opengl1", CVAR_ARCHIVE | CVAR_LATCH);
+#else
 	cl_renderer = Cvar_Get("cl_renderer", "opengl2", CVAR_ARCHIVE | CVAR_LATCH);
+#endif
 
 	Com_sprintf(dllName, sizeof(dllName), "renderer_%s_" ARCH_STRING DLL_EXT, cl_renderer->string);
 
@@ -3216,7 +3225,11 @@ void CL_InitRef( void ) {
 		Com_Printf("failed:\n\"%s\"\n", Sys_LibraryError());
 		Cvar_ForceReset("cl_renderer");
 
+#ifdef	FAQ3_BATTER
+		Com_sprintf(dllName, sizeof(dllName), "renderer_opengl1_" ARCH_STRING DLL_EXT);
+#else
 		Com_sprintf(dllName, sizeof(dllName), "renderer_opengl2_" ARCH_STRING DLL_EXT);
+#endif
 		rendererLib = Sys_LoadDll(dllName, qfalse);
 	}
 
@@ -3634,6 +3647,11 @@ void CL_Init( void ) {
 
 	Cvar_Get ("password", "", CVAR_USERINFO);
 	Cvar_Get ("cg_predictItems", "1", CVAR_USERINFO | CVAR_ARCHIVE );
+
+#ifdef	FAQ3_CSCALE
+	// xDiloc - text scale
+	con_textscale = Cvar_Get("faq_scale", "2.0", CVAR_ARCHIVE);
+#endif
 
 #ifdef USE_MUMBLE
 	cl_useMumble = Cvar_Get ("cl_useMumble", "0", CVAR_ARCHIVE | CVAR_LATCH);

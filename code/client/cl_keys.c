@@ -336,8 +336,15 @@ Handles horizontal scrolling and cursor blinking
 x, y, and width are in pixels
 ===================
 */
+#ifdef	FAQ3_CSCALE
+// xDiloc - text scale
+void Field_VariableSizeDraw(field_t *edit, int x, int y,
+int width, int height, qboolean nativeSize, int size,
+qboolean showCursor, qboolean noColorEscape) {
+#else
 void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, qboolean showCursor,
 		qboolean noColorEscape ) {
+#endif
 	int		len;
 	int		drawLen;
 	int		prestep;
@@ -373,6 +380,29 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 	Com_Memcpy( str, edit->buffer + prestep, drawLen );
 	str[ drawLen ] = 0;
 
+#ifdef	FAQ3_CSCALE
+	// xDiloc - text scale
+	if (nativeSize) {
+		if (size == SMALLCHAR_WIDTH) {
+			float	color[4];
+			color[0] = color[1] = color[2] = color[3] = 1.0;
+			SCR_DrawNativeSmallStringExt(x, y, str, color, qfalse, noColorEscape);
+		} else {
+			// draw big string with drop shadow
+			SCR_DrawBigString(x, y, str, 1.0, noColorEscape);
+		}
+	} else {
+		if (size == SMALLCHAR_WIDTH) {
+			float	color[4];
+
+			color[0] = color[1] = color[2] = color[3] = 1.0;
+			SCR_DrawSmallStringExt(x, y, width, height, str, color, qfalse, noColorEscape);
+		} else {
+			// draw big string with drop shadow
+			SCR_DrawBigString(x, y, str, 1.0, noColorEscape);
+		}
+	}
+#else
 	// draw it
 	if ( size == SMALLCHAR_WIDTH ) {
 		float	color[4];
@@ -383,6 +413,7 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 		// draw big string with drop shadow
 		SCR_DrawBigString( x, y, str, 1.0, noColorEscape );
 	}
+#endif
 
 	// draw the cursor
 	if ( showCursor ) {
@@ -399,7 +430,12 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 		i = drawLen - strlen( str );
 
 		if ( size == SMALLCHAR_WIDTH ) {
+#ifdef	FAQ3_CSCALE
+			// xDiloc - text scale
+			SCR_DrawSmallChar(x + (edit->cursor - prestep - i) * width, y, width, height, cursorChar);
+#else
 			SCR_DrawSmallChar( x + ( edit->cursor - prestep - i ) * size, y, cursorChar );
+#endif
 		} else {
 			str[0] = cursorChar;
 			str[1] = 0;
@@ -411,12 +447,22 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 
 void Field_Draw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape ) 
 {
+#ifdef	FAQ3_CSCALE
+	// xDiloc - text scale
+	Field_VariableSizeDraw(edit, x, y, width, SMALLCHAR_HEIGHT, qtrue, SMALLCHAR_WIDTH, showCursor, noColorEscape);
+#else
 	Field_VariableSizeDraw( edit, x, y, width, SMALLCHAR_WIDTH, showCursor, noColorEscape );
+#endif
 }
 
 void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape ) 
 {
+#ifdef	FAQ3_CSCALE
+	// xDiloc - text scale
+	Field_VariableSizeDraw(edit, x, y, width, BIGCHAR_HEIGHT, qtrue, BIGCHAR_WIDTH, showCursor, noColorEscape);
+#else
 	Field_VariableSizeDraw( edit, x, y, width, BIGCHAR_WIDTH, showCursor, noColorEscape );
+#endif
 }
 
 /*
@@ -733,6 +779,36 @@ void Console_Key (int key) {
 		Con_Bottom();
 		return;
 	}
+
+#ifdef	FAQ3_CSCALE
+	// xDiloc - text scale
+	if (key == K_KP_PLUS && keys[K_CTRL].down) {
+//		Com_Printf("size %f\n", con_textscale->value);
+		if (con_textscale->value <= 0) {
+			Cvar_SetValue(con_textscale->name, 1.0f);
+		}
+
+		Cvar_SetValue(con_textscale->name, con_textscale->value + 0.25f);
+		return;
+	}
+
+	if (key == K_KP_MINUS && keys[K_CTRL].down) {
+//		Com_Printf("size %f\n", con_textscale->value);
+		if (con_textscale->value <= 0) {
+			Cvar_SetValue(con_textscale->name, 1.0f);
+		}
+
+		if (con_textscale->value - 0.25f > 0) {
+			Cvar_SetValue(con_textscale->name, con_textscale->value - 0.25f);
+		}
+		return;
+	}
+
+	if (key == K_KP_INS && keys[K_CTRL].down) {
+		Cvar_SetValue(con_textscale->name, 1.0f);
+		return;
+	}
+#endif
 
 	// pass to the normal editline routine
 	Field_KeyDownEvent( &g_consoleField, key );
@@ -1337,6 +1413,25 @@ void CL_KeyUpEvent( int key, unsigned time )
 	if (anykeydown < 0) {
 		anykeydown = 0;
 	}
+
+#ifdef	FAQ3_CMONGL
+	if (key == K_HOME) {
+		int	pos;
+
+		pos = Cvar_VariableIntegerValue("faq_cmon");
+//		Com_Printf("faq_cmon: %i\n", pos);
+
+		if (pos == 1) {
+			Cvar_Set("faq_cmon", "0");
+			Com_Printf("faq_cmon: disable\n");
+		}
+		if (pos == 0) {
+			Cvar_Set("faq_cmon", "1");
+			Com_Printf("faq_cmon: enable\n");
+		}
+		return;
+	}
+#endif
 
 	// don't process key-up events for the console key
 	if ( key == K_CONSOLE || ( key == K_ESCAPE && keys[K_SHIFT].down ) )

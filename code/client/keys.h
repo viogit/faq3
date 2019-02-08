@@ -35,6 +35,10 @@ void Field_KeyDownEvent( field_t *edit, int key );
 void Field_CharEvent( field_t *edit, int ch );
 void Field_Draw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape );
 void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape );
+#ifdef	FAQ3_CSCALE
+// xDiloc - text scale
+void Field_VariableSizeDraw(field_t *edit, int x, int y, int width, int height, qboolean nativeSize, int size, qboolean showCursor, qboolean noColorEscape);
+#endif
 
 #define		COMMAND_HISTORY		32
 extern	field_t	historyEditLines[COMMAND_HISTORY];

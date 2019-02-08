@@ -953,7 +953,12 @@ qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 	orientation_t	surface, camera;
 
 	// don't recursively mirror
+#ifdef	FAQ3_PORTAL
+	// xDiloc - portal support
+	if (tr.viewParms.portalLevel >= faq_numportal->integer && tr.viewParms.portalLevel > 0) {
+#else
 	if (tr.viewParms.isPortal) {
+#endif
 		ri.Printf( PRINT_DEVELOPER, "WARNING: recursive mirror/portal found\n" );
 		return qfalse;
 	}
@@ -963,15 +968,29 @@ qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 	}
 
 	// trivially reject portal/mirror
+#ifdef	FAQ3_PORTAL
+	// xDiloc - portal support
+	if (SurfIsOffscreen(drawSurf, clipDest) && !faq_numportal->integer) {
+		return qfalse;
+	}
+#else
 	if ( SurfIsOffscreen( drawSurf, clipDest ) ) {
 		return qfalse;
 	}
+#endif
 
 	// save old viewParms so we can return to it after the mirror view
 	oldParms = tr.viewParms;
 
+#ifdef	FAQ3_PORTAL
+	// xDiloc - portal support
+	tr.viewParms.portalLevel++;
+#endif
 	newParms = tr.viewParms;
+#ifndef	FAQ3_PORTAL
+	// xDiloc - portal support
 	newParms.isPortal = qtrue;
+#endif
 	if ( !R_GetPortalOrientations( drawSurf, entityNum, &surface, &camera, 
 		newParms.pvsOrigin, &newParms.isMirror ) ) {
 		return qfalse;		// bad portal, no portalentity
@@ -1204,7 +1223,13 @@ void R_AddEntitySurfaces (void) {
 		// we don't want the hacked weapon position showing in 
 		// mirrors, because the true body position will already be drawn
 		//
+#ifdef	FAQ3_PORTAL
+		// xDiloc - portal support
+		if ((ent->e.renderfx & RF_FIRST_PERSON)
+		 && (tr.viewParms.portalLevel > 0 || tr.viewParms.isMirror)) {
+#else
 		if ( (ent->e.renderfx & RF_FIRST_PERSON) && tr.viewParms.isPortal) {
+#endif
 			continue;
 		}
 
@@ -1220,7 +1245,12 @@ void R_AddEntitySurfaces (void) {
 			// self blood sprites, talk balloons, etc should not be drawn in the primary
 			// view.  We can't just do this check for all entities, because md3
 			// entities may still want to cast shadows from them
+#ifdef	FAQ3_PORTAL
+			// xDiloc - portal support
+			if ((ent->e.renderfx & RF_THIRD_PERSON) && tr.viewParms.portalLevel == 0) {
+#else
 			if ( (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal) {
+#endif
 				continue;
 			}
 			shader = R_GetShaderByHandle( ent->e.customShader );
@@ -1249,7 +1279,12 @@ void R_AddEntitySurfaces (void) {
 					R_AddBrushModelSurfaces( ent );
 					break;
 				case MOD_BAD:		// null model axis
+#ifdef	FAQ3_PORTAL
+					// xDiloc - portal support
+					if ((ent->e.renderfx & RF_THIRD_PERSON) && tr.viewParms.portalLevel == 0) {
+#else
 					if ( (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal) {
+#endif
 						break;
 					}
 					R_AddDrawSurf( &entitySurface, tr.defaultShader, 0, 0 );

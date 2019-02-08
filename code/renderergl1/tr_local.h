@@ -455,7 +455,12 @@ typedef struct {
 	orientationr_t	or;
 	orientationr_t	world;
 	vec3_t		pvsOrigin;			// may be different than or.origin for portals
+#ifdef	FAQ3_PORTAL
+	// xDiloc - portal support
+	int		portalLevel;
+#else
 	qboolean	isPortal;			// true if this view is through a portal
+#endif
 	qboolean	isMirror;			// the portal is a mirror, invert the face culling
 	int			frameSceneNum;		// copied from tr.frameSceneNum
 	int			frameCount;			// copied from tr.frameCount
@@ -1073,6 +1078,15 @@ extern	cvar_t	*r_printShaders;
 
 extern cvar_t	*r_marksOnTriangleMeshes;
 
+#ifdef	FAQ3_PORTAL
+// xDiloc - portal support
+extern	cvar_t	*faq_numportal;
+#endif
+
+#ifdef	FAQ3_CMONGL
+extern	cvar_t	*faq_cmon;
+#endif
+
 //====================================================================
 
 void R_SwapBuffers( int );
@@ -1459,7 +1473,12 @@ RENDERER BACK END COMMAND QUEUE
 =============================================================
 */
 
+#ifdef	FAQ3_CSCALE
+// xDiloc - text scale
+#define	MAX_RENDER_COMMANDS	0x60000
+#else
 #define	MAX_RENDER_COMMANDS	0x40000
+#endif
 
 typedef struct {
 	byte	cmds[MAX_RENDER_COMMANDS];

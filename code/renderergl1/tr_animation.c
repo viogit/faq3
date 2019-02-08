@@ -192,7 +192,12 @@ void R_MDRAddAnimSurfaces( trRefEntity_t *ent ) {
 
 	header = (mdrHeader_t *) tr.currentModel->modelData;
 	
+#ifdef	FAQ3_PORTAL
+	// xDiloc - portal support
+	personalModel = (ent->e.renderfx & RF_THIRD_PERSON) && tr.viewParms.portalLevel == 0;
+#else
 	personalModel = (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal;
+#endif
 	
 	if ( ent->e.renderfx & RF_WRAP_FRAMES )
 	{

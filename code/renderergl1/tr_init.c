@@ -168,6 +168,14 @@ int		max_polys;
 cvar_t	*r_maxpolyverts;
 int		max_polyverts;
 
+#ifdef	FAQ3_PORTAL
+// xDiloc - portal support
+cvar_t	*faq_numportal;
+#endif
+#ifdef	FAQ3_CMONGL
+cvar_t	*faq_cmon;
+#endif
+
 /*
 ** InitOpenGL
 **
@@ -1149,6 +1157,16 @@ void R_Register( void )
 
 	r_maxpolys = ri.Cvar_Get( "r_maxpolys", va("%d", MAX_POLYS), 0);
 	r_maxpolyverts = ri.Cvar_Get( "r_maxpolyverts", va("%d", MAX_POLYVERTS), 0);
+
+#ifdef	FAQ3_PORTAL
+	// xDiloc - portal support
+	faq_numportal = ri.Cvar_Get("faq_numportal", "3", CVAR_ARCHIVE);
+#endif
+
+#ifdef	FAQ3_CMONGL
+	// xDiloc - portal support
+	faq_cmon = ri.Cvar_Get("faq_cmon", "0", CVAR_ARCHIVE);
+#endif
 
 	// make sure all the commands added here are also
 	// removed in R_Shutdown

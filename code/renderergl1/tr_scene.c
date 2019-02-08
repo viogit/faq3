@@ -385,7 +385,12 @@ void RE_RenderScene( const refdef_t *fd ) {
 	parms.viewportY = glConfig.vidHeight - ( tr.refdef.y + tr.refdef.height );
 	parms.viewportWidth = tr.refdef.width;
 	parms.viewportHeight = tr.refdef.height;
+#ifdef	FAQ3_PORTAL
+	// xDiloc - portal support
+	parms.portalLevel = 0;
+#else
 	parms.isPortal = qfalse;
+#endif
 
 	parms.fovX = tr.refdef.fov_x;
 	parms.fovY = tr.refdef.fov_y;

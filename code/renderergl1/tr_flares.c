@@ -62,7 +62,12 @@ typedef struct flare_s {
 
 	int			addedFrame;
 
+#ifdef	FAQ3_PORTAL
+	// xDiloc - portal support
+	int		portalLevel;		// > 0 if in a portal view of the scene
+#else
 	qboolean	inPortal;				// true if in a portal view of the scene
+#endif
 	int			frameSceneNum;
 	void		*surface;
 	int			fogNum;
@@ -169,7 +174,12 @@ void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t 
 	// see if a flare with a matching surface, scene, and view exists
 	for ( f = r_activeFlares ; f ; f = f->next ) {
 		if ( f->surface == surface && f->frameSceneNum == backEnd.viewParms.frameSceneNum
+#ifdef	FAQ3_PORTAL
+		// xDiloc - portal support
+		&& f->portalLevel == backEnd.viewParms.portalLevel) {
+#else
 			&& f->inPortal == backEnd.viewParms.isPortal ) {
+#endif
 			break;
 		}
 	}
@@ -187,7 +197,12 @@ void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t 
 
 		f->surface = surface;
 		f->frameSceneNum = backEnd.viewParms.frameSceneNum;
+#ifdef	FAQ3_PORTAL
+		// xDiloc - portal support
+		f->portalLevel = backEnd.viewParms.portalLevel;
+#else
 		f->inPortal = backEnd.viewParms.isPortal;
+#endif
 		f->addedFrame = -1;
 	}
 
@@ -491,7 +506,12 @@ void RB_RenderFlares (void) {
 		// don't draw any here that aren't from this scene / portal
 		f->drawIntensity = 0;
 		if ( f->frameSceneNum == backEnd.viewParms.frameSceneNum
+#ifdef	FAQ3_PORTAL
+		// xDiloc - portal support
+		&& f->portalLevel == backEnd.viewParms.portalLevel) {
+#else
 			&& f->inPortal == backEnd.viewParms.isPortal ) {
+#endif
 			RB_TestFlare( f );
 			if ( f->drawIntensity ) {
 				draw = qtrue;
@@ -511,7 +531,12 @@ void RB_RenderFlares (void) {
 		return;		// none visible
 	}
 
+#ifdef	FAQ3_PORTAL
+	// xDiloc - portal support
+	if (backEnd.viewParms.portalLevel > 0) {
+#else
 	if ( backEnd.viewParms.isPortal ) {
+#endif
 		qglDisable (GL_CLIP_PLANE0);
 	}
 
@@ -526,7 +551,12 @@ void RB_RenderFlares (void) {
 
 	for ( f = r_activeFlares ; f ; f = f->next ) {
 		if ( f->frameSceneNum == backEnd.viewParms.frameSceneNum
+#ifdef	FAQ3_PORTAL
+			// xDiloc - portal support
+			&& f->portalLevel == backEnd.viewParms.portalLevel
+#else
 			&& f->inPortal == backEnd.viewParms.isPortal
+#endif
 			&& f->drawIntensity ) {
 			RB_RenderFlare( f );
 		}

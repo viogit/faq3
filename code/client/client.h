@@ -426,6 +426,11 @@ extern	cvar_t	*cl_autoRecordDemo;
 
 extern	cvar_t	*cl_consoleKeys;
 
+#ifdef	FAQ3_CSCALE
+// xDiloc - text scale
+extern	cvar_t	*con_textscale;
+#endif
+
 #ifdef USE_MUMBLE
 extern	cvar_t	*cl_useMumble;
 extern	cvar_t	*cl_mumbleScale;
@@ -577,8 +582,16 @@ void	SCR_DrawNamedPic( float x, float y, float width, float height, const char *
 
 void	SCR_DrawBigString( int x, int y, const char *s, float alpha, qboolean noColorEscape );			// draws a string with embedded color control characters with fade
 void	SCR_DrawBigStringColor( int x, int y, const char *s, vec4_t color, qboolean noColorEscape );	// ignores embedded color control characters
+#ifdef	FAQ3_CSCALE
+// xDiloc - text scale
+void	SCR_DrawNativeSmallStringExt(int x, int y, const char *string, float *setColor, qboolean forceColor, qboolean noColorEscape);
+void	SCR_DrawSmallStringExt(int x, int y, int width, int height, const char *string, float *setColor, qboolean forceColor, qboolean noColorEscape);
+void	SCR_DrawNativeSmallChar(int x, int y, int ch);
+void	SCR_DrawSmallChar(int x, int y, int width, int height, int ch);
+#else
 void	SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, qboolean forceColor, qboolean noColorEscape );
 void	SCR_DrawSmallChar( int x, int y, int ch );
+#endif
 
 
 //

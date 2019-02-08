@@ -472,7 +472,12 @@ void RB_BeginDrawingView (void) {
 	backEnd.skyRenderedThisView = qfalse;
 
 	// clip to the plane of the portal
+#ifdef	FAQ3_PORTAL
+	// xDiloc - portal support
+	if (backEnd.viewParms.portalLevel > 0) {
+#else
 	if ( backEnd.viewParms.isPortal ) {
+#endif
 		float	plane[4];
 		GLdouble	plane2[4];
 
@@ -577,6 +582,16 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 				if ( backEnd.currentEntity->needDlights ) {
 					R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.or );
 				}
+
+#ifdef	FAQ3_CMONGL
+				// xDiloc - cmon gays wtf
+				if ((backEnd.currentEntity->e.renderfx & RF_LIGHTING_ORIGIN) && faq_cmon->integer) {
+					// hack the depth range to prevent view model from poking into walls
+					depthRange = qtrue;
+					if(backEnd.currentEntity->e.renderfx & RF_CROSSHAIR)
+						isCrosshair = qtrue;
+				}
+#endif
 
 				if(backEnd.currentEntity->e.renderfx & RF_DEPTHHACK)
 				{

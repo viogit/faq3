@@ -538,7 +538,16 @@ void RE_EndFrame( int *frontEndMsec, int *backEndMsec ) {
 	}
 	cmd = R_GetCommandBufferReserved( sizeof( *cmd ), 0 );
 	if ( !cmd ) {
+#ifdef	FAQ3_CSCALE
+		// xDiloc - text scale
+		R_IssuePendingRenderCommands();
+		cmd = R_GetCommandBuffer(sizeof(*cmd));
+		if (!cmd) {
+			return;
+		}
+#else
 		return;
+#endif
 	}
 	cmd->commandId = RC_SWAP_BUFFERS;
 

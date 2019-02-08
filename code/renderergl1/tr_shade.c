@@ -356,7 +356,12 @@ static void DrawMultitextured( shaderCommands_t *input, int stage ) {
 
 	// this is an ugly hack to work around a GeForce driver
 	// bug with multitexture and clip planes
+#ifdef	FAQ3_PORTAL
+	// xDiloc - portal support
+	if (backEnd.viewParms.portalLevel > 0) {
+#else
 	if ( backEnd.viewParms.isPortal ) {
+#endif
 		qglPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	}
 

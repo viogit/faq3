@@ -29,7 +29,13 @@ int g_console_field_width = 78;
 
 #define	NUM_CON_TIMES 4
 
+#ifdef	FAQ3_CSCALE
+// xDiloc - text scale
+#define		CON_TEXTSIZE	(32768*2)
+#else
 #define		CON_TEXTSIZE	32768
+#endif
+
 typedef struct {
 	qboolean	initialized;
 
@@ -51,6 +57,10 @@ typedef struct {
 	int		times[NUM_CON_TIMES];	// cls.realtime time the line was generated
 								// for transparent notify lines
 	vec4_t	color;
+#ifdef	FAQ3_CSCALE
+	// xDiloc - text scale
+	int		charWidth, charHeight;
+#endif
 } console_t;
 
 console_t	con;
@@ -280,10 +290,19 @@ If the line width has changed, reformat the buffer.
 */
 void Con_CheckResize (void)
 {
+#ifdef	FAQ3_CSCALE
+	// xDiloc - text scale
+	int		i, width;
+	char		consoleBuffer[1024];
+	unsigned int	size;
+
+	width = (cls.glconfig.vidWidth / con.charWidth) - 2;
+#else
 	int		i, j, width, oldwidth, oldtotallines, numlines, numchars;
 	short	tbuf[CON_TEXTSIZE];
 
 	width = (SCREEN_WIDTH / SMALLCHAR_WIDTH) - 2;
+#endif
 
 	if (width == con.linewidth)
 		return;
@@ -293,16 +312,26 @@ void Con_CheckResize (void)
 		width = DEFAULT_CONSOLE_WIDTH;
 		con.linewidth = width;
 		con.totallines = CON_TEXTSIZE / con.linewidth;
+#ifdef	FAQ3_CSCALE
+		// xDiloc - text scale
+		con.current = con.totallines - 1;
+		con.display = con.current;
+#endif
 		for(i=0; i<CON_TEXTSIZE; i++)
 
 			con.text[i] = (ColorIndex(COLOR_WHITE)<<8) | ' ';
 	}
 	else
 	{
+#ifndef	FAQ3_CSCALE
 		oldwidth = con.linewidth;
+#endif
 		con.linewidth = width;
+#ifndef	FAQ3_CSCALE
 		oldtotallines = con.totallines;
+#endif
 		con.totallines = CON_TEXTSIZE / con.linewidth;
+#ifndef	FAQ3_CSCALE
 		numlines = oldtotallines;
 
 		if (con.totallines < numlines)
@@ -312,13 +341,31 @@ void Con_CheckResize (void)
 	
 		if (con.linewidth < numchars)
 			numchars = con.linewidth;
+#endif
 
+#ifdef	FAQ3_CSCALE
+		// xDiloc - text scale
+		con.current = con.totallines - 1;
+		con.display = con.current;
+#else
 		Com_Memcpy (tbuf, con.text, CON_TEXTSIZE * sizeof(short));
+#endif
 		for(i=0; i<CON_TEXTSIZE; i++)
 
 			con.text[i] = (ColorIndex(COLOR_WHITE)<<8) | ' ';
 
+#ifdef	FAQ3_CSCALE
+		// xDiloc - text scale
+		CON_LogSaveReadPos();
 
+		// rewrap the console text
+		while((size = CON_LogRead(consoleBuffer, sizeof(consoleBuffer)-1)) > 0) {
+			consoleBuffer[size] = '\0';
+			CL_ConsolePrint(consoleBuffer);
+		}
+
+		CON_LogRestoreReadPos();
+#else
 		for (i=0 ; i<numlines ; i++)
 		{
 			for (j=0 ; j<numchars ; j++)
@@ -328,12 +375,15 @@ void Con_CheckResize (void)
 							  oldtotallines) * oldwidth + j];
 			}
 		}
+#endif
 
 		Con_ClearNotify ();
 	}
 
+#ifndef	FAQ3_CSCALE
 	con.current = con.totallines - 1;
 	con.display = con.current;
+#endif
 }
 
 /*
@@ -451,13 +501,21 @@ void CL_ConsolePrint( char *txt ) {
 	}
 	
 	if (!con.initialized) {
+#ifdef	FAQ3_CSCALE
+		// xDiloc - text scale
+		con.initialized = qtrue;
+		con.charWidth = SMALLCHAR_WIDTH;
+		con.charHeight = SMALLCHAR_HEIGHT;
+#endif
 		con.color[0] = 
 		con.color[1] = 
 		con.color[2] =
 		con.color[3] = 1.0f;
 		con.linewidth = -1;
 		Con_CheckResize ();
+#ifndef	FAQ3_CSCALE
 		con.initialized = qtrue;
+#endif
 	}
 
 	color = ColorIndex(COLOR_WHITE);
@@ -543,14 +601,27 @@ void Con_DrawInput (void) {
 		return;
 	}
 
+#ifdef	FAQ3_CSCALE
+	// xDiloc - text scale
+	y = con.vislines - (con.charHeight * 2);
+#else
 	y = con.vislines - ( SMALLCHAR_HEIGHT * 2 );
+#endif
 
 	re.SetColor( con.color );
 
+#ifdef	FAQ3_CSCALE
+	// xDiloc - text scale
+	SCR_DrawSmallChar(con.xadjust + 1 * con.charWidth, y, con.charWidth, con.charHeight, ']');
+
+	Field_VariableSizeDraw(&g_consoleField, con.xadjust + 2 * con.charWidth, y,
+	con.charWidth, con.charHeight, qfalse, SMALLCHAR_WIDTH, qtrue, qtrue);
+#else
 	SCR_DrawSmallChar( con.xadjust + 1 * SMALLCHAR_WIDTH, y, ']' );
 
 	Field_Draw( &g_consoleField, con.xadjust + 2 * SMALLCHAR_WIDTH, y,
 		SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, qtrue, qtrue );
+#endif
 }
 
 
@@ -598,10 +669,22 @@ void Con_DrawNotify (void)
 				currentColor = ColorIndexForNumber( text[x]>>8 );
 				re.SetColor( g_color_table[currentColor] );
 			}
+
+#ifdef	FAQ3_CSCALE
+			// xDiloc - text scale
+			SCR_DrawSmallChar(cl_conXOffset->integer + con.xadjust + (x+1)*con.charWidth,
+			v, con.charWidth, con.charHeight, text[x] & 0xff);
+#else
 			SCR_DrawSmallChar( cl_conXOffset->integer + con.xadjust + (x+1)*SMALLCHAR_WIDTH, v, text[x] & 0xff );
+#endif
 		}
 
+#ifdef	FAQ3_CSCALE
+		// xDiloc - text scale
+		v += con.charHeight;
+#else
 		v += SMALLCHAR_HEIGHT;
+#endif
 	}
 
 	re.SetColor( NULL );
@@ -681,25 +764,45 @@ void Con_DrawSolidConsole( float frac ) {
 	i = strlen( Q3_VERSION );
 
 	for (x=0 ; x<i ; x++) {
+#ifdef	FAQ3_CSCALE
+		// xDiloc - text scale
+		SCR_DrawSmallChar(cls.glconfig.vidWidth - (i - x + 1) * con.charWidth,
+		lines - con.charHeight, con.charWidth, con.charHeight, Q3_VERSION[x]);
+#else
 		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * SMALLCHAR_WIDTH,
 			lines - SMALLCHAR_HEIGHT, Q3_VERSION[x] );
+#endif
 	}
 
 
 	// draw the text
 	con.vislines = lines;
+#ifdef	FAQ3_CSCALE
+	// xDiloc - text scale
+	rows = (lines-con.charHeight)/con.charHeight;			// rows of text to draw
+	y = lines - (con.charHeight*3);
+#else
 	rows = (lines-SMALLCHAR_HEIGHT)/SMALLCHAR_HEIGHT;		// rows of text to draw
 
 	y = lines - (SMALLCHAR_HEIGHT*3);
+#endif
 
 	// draw from the bottom up
 	if (con.display != con.current)
 	{
 	// draw arrows to show the buffer is backscrolled
 		re.SetColor( g_color_table[ColorIndex(COLOR_RED)] );
+#ifdef	FAQ3_CSCALE
+		// xDiloc - text scale
+		for (x = 0; x < con.linewidth; x += 4) {
+			SCR_DrawSmallChar(con.xadjust + (x+1)*con.charWidth, y, con.charWidth, con.charHeight, '^');
+		}
+		y -= con.charHeight;
+#else
 		for (x=0 ; x<con.linewidth ; x+=4)
 			SCR_DrawSmallChar( con.xadjust + (x+1)*SMALLCHAR_WIDTH, y, '^' );
 		y -= SMALLCHAR_HEIGHT;
+#endif
 		rows--;
 	}
 	
@@ -712,7 +815,12 @@ void Con_DrawSolidConsole( float frac ) {
 	currentColor = 7;
 	re.SetColor( g_color_table[currentColor] );
 
+#ifdef	FAQ3_CSCALE
+	// xDiloc - text scale
+	for (i=0 ; i<rows ; i++, y -= con.charHeight, row--)
+#else
 	for (i=0 ; i<rows ; i++, y -= SMALLCHAR_HEIGHT, row--)
+#endif
 	{
 		if (row < 0)
 			break;
@@ -732,7 +840,14 @@ void Con_DrawSolidConsole( float frac ) {
 				currentColor = ColorIndexForNumber( text[x]>>8 );
 				re.SetColor( g_color_table[currentColor] );
 			}
+#ifdef	FAQ3_CSCALE
+			// xDiloc - text scale
+			SCR_DrawSmallChar(con.xadjust + (x+1)*con.charWidth,
+			y, con.charWidth, con.charHeight, text[x] & 0xff);
+#else
 			SCR_DrawSmallChar(  con.xadjust + (x+1)*SMALLCHAR_WIDTH, y, text[x] & 0xff );
+#endif
+
 		}
 	}
 
@@ -750,6 +865,32 @@ Con_DrawConsole
 ==================
 */
 void Con_DrawConsole( void ) {
+#ifdef	FAQ3_CSCALE
+	// xDiloc - text scale
+	if (con_textscale->value == -1.0f) {
+		float	charWidth, charHeight;
+
+		charWidth = SMALLCHAR_WIDTH;
+		charHeight = SMALLCHAR_HEIGHT;
+
+		SCR_AdjustFrom640(NULL, NULL, &charWidth, &charHeight);
+
+		con.charWidth = floor(charWidth);
+		con.charHeight = floor(charHeight);
+	} else {
+		con.charWidth = floor(SMALLCHAR_WIDTH * con_textscale->value);
+		con.charHeight = floor(SMALLCHAR_HEIGHT * con_textscale->value);
+	}
+
+	if (con.charWidth < 1) {
+		con.charWidth = SMALLCHAR_WIDTH;
+	}
+
+	if (con.charHeight < 1) {
+		con.charHeight = SMALLCHAR_HEIGHT;
+	}
+#endif
+
 	// check for console width changes from a vid mode change
 	Con_CheckResize ();
 

@@ -2328,7 +2328,12 @@ RENDERER BACK END COMMAND QUEUE
 =============================================================
 */
 
+#ifdef	FAQ3_CSCALE
+// xDiloc - text scale
+#define	MAX_RENDER_COMMANDS	0x60000
+#else
 #define	MAX_RENDER_COMMANDS	0x40000
+#endif
 
 typedef struct {
 	byte	cmds[MAX_RENDER_COMMANDS];
